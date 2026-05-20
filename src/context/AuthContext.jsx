@@ -50,37 +50,36 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const signup = async (formData) => {
-    const res = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone || '',
-        address: formData.address || '',
-        password: formData.password,
-        confirm: formData.confirm,
-      }),
-    });
+const signup = async (formData) => {
+  const body = new FormData();
 
-    const data = await res.json();
+  body.append("name", formData.name);
+  body.append("email", formData.email);
+  body.append("phone", formData.phone || "");
+  body.append("address", formData.address || "");
+  body.append("password", formData.password);
+  body.append("confirm", formData.confirm || "");
 
-    if (!res.ok) {
-      throw new Error(
-        data.detail ||
-          'Please fill all required fields. Password must be at least 6 characters.'
-      );
-    }
+  if (formData.profileImage) {
+    body.append("profileImage", formData.profileImage);
+  }
 
-    // Important:
-    // Do NOT set user here.
-    // Do NOT save user to localStorage here.
-    // Signup only creates the account.
-    return data;
-  };
+  const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+    method: "POST",
+    body,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(
+      data.detail ||
+        "Please fill all required fields. Password must be at least 6 characters."
+    );
+  }
+
+  return data;
+};
 
   const uploadProfileImage = async (file) => {
     if (!user?.token) {

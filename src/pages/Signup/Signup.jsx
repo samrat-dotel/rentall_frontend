@@ -29,26 +29,54 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-  const set = (key, val) => {
-    setForm((f) => ({ ...f, [key]: val }));
-    setErrors((e) => ({ ...e, [key]: "" }));
+  const set = (key, value) => {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+
+    setErrors((current) => ({
+      ...current,
+      [key]: "",
+      form: "",
+    }));
   };
 
   const validate = () => {
     const e = {};
 
-    if (!form.name.trim()) e.name = "Name is required.";
+    if (!form.name.trim()) {
+      e.name = "Name is required.";
+    }
 
-    if (!form.email.trim()) e.email = "Email is required.";
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = "Enter a valid email.";
+    if (!form.email.trim()) {
+      e.email = "Email is required.";
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+      e.email = "Enter a valid email.";
+    }
 
-    if (!form.password) e.password = "Password is required.";
-    else if (form.password.length < 6)
+    if (!form.phone.trim()) {
+      e.phone = "Phone number is required.";
+    }
+
+    if (!form.address.trim()) {
+      e.address = "Address is required.";
+    }
+
+    if (!form.password) {
+      e.password = "Password is required.";
+    } else if (form.password.length < 6) {
       e.password = "Password must be at least 6 characters.";
+    }
 
-    if (form.confirm !== form.password) e.confirm = "Passwords do not match.";
+    if (!form.confirm) {
+      e.confirm = "Please confirm your password.";
+    } else if (form.confirm !== form.password) {
+      e.confirm = "Passwords do not match.";
+    }
 
     return e;
   };
@@ -56,11 +84,42 @@ export default function Signup() {
   const handleAvatar = (e) => {
     const file = e.target.files?.[0];
 
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => setAvatarPreview(ev.target.result);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrors((current) => ({
+        ...current,
+        avatar: "Please upload a valid image file.",
+      }));
+      return;
     }
+
+    const maxSizeInMb = 5;
+    const maxSizeInBytes = maxSizeInMb * 1024 * 1024;
+
+    if (file.size > maxSizeInBytes) {
+      setErrors((current) => ({
+        ...current,
+        avatar: `Profile photo must be smaller than ${maxSizeInMb}MB.`,
+      }));
+      return;
+    }
+
+    setAvatarFile(file);
+
+    setErrors((current) => ({
+      ...current,
+      avatar: "",
+      form: "",
+    }));
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      setAvatarPreview(event.target?.result || null);
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -76,7 +135,15 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      await signup(form);
+      await signup({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        password: form.password,
+        confirm: form.confirm,
+        profileImage: avatarFile,
+      });
 
       setForm({
         name: "",
@@ -87,10 +154,13 @@ export default function Signup() {
         confirm: "",
       });
 
+      setAvatarFile(null);
       setAvatarPreview(null);
       setShowSuccessPopup(true);
-    } catch (e) {
-      setErrors({ form: e.message });
+    } catch (error) {
+      setErrors({
+        form: error.message || "Could not create account.",
+      });
     } finally {
       setLoading(false);
     }
@@ -103,7 +173,6 @@ export default function Signup() {
 
   return (
     <div className="signup-page">
-      {/* Left: Benefits Panel */}
       <div className="signup-page__left">
         <div className="signup-page__left-inner">
           <Link to="/" className="signup-page__logo">
@@ -122,13 +191,13 @@ export default function Signup() {
             <h3 className="signup-page__benefits-title">Why join RentAll?</h3>
 
             <ul className="signup-page__benefits-list">
-              {BENEFITS.map((b) => (
-                <li key={b} className="signup-page__benefit">
+              {BENEFITS.map((benefit) => (
+                <li key={benefit} className="signup-page__benefit">
                   <CheckCircle
                     size={16}
                     className="signup-page__benefit-icon"
                   />
-                  <span>{b}</span>
+                  <span>{benefit}</span>
                 </li>
               ))}
             </ul>
@@ -136,21 +205,21 @@ export default function Signup() {
         </div>
       </div>
 
-      {/* Right: Form */}
       <div className="signup-page__right">
         <div className="signup-page__right-inner">
           <div className="signup-page__form-header">
             <h1 className="signup-page__title">Create your account</h1>
+
             <p className="signup-page__sub">
-              Start renting in minutes. No credit card required.
+              Add your contact details and profile photo to help build trust
+              before renting or listing items.
             </p>
           </div>
 
-          {/* Avatar Upload */}
           <div className="signup-page__avatar-upload">
             <div className="signup-page__avatar-preview">
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Preview" />
+                <img src={avatarPreview} alt="Profile preview" />
               ) : (
                 <Upload size={24} className="signup-page__upload-icon" />
               )}
@@ -170,8 +239,12 @@ export default function Signup() {
               />
 
               <p className="signup-page__upload-hint">
-                Optional · JPG or PNG · Max 5MB
+                Optional · JPG, PNG or WEBP · Max 5MB
               </p>
+
+              {errors.avatar && (
+                <p className="signup-page__field-error">{errors.avatar}</p>
+              )}
             </div>
           </div>
 
@@ -192,7 +265,7 @@ export default function Signup() {
                 id="name"
                 type="text"
                 value={form.name}
-                onChange={(v) => set("name", v)}
+                onChange={(value) => set("name", value)}
                 error={errors.name}
                 placeholder="Alex Morgan"
               />
@@ -202,7 +275,7 @@ export default function Signup() {
                 id="email"
                 type="email"
                 value={form.email}
-                onChange={(v) => set("email", v)}
+                onChange={(value) => set("email", value)}
                 error={errors.email}
                 placeholder="you@example.com"
               />
@@ -214,7 +287,7 @@ export default function Signup() {
                 id="phone"
                 type="tel"
                 value={form.phone}
-                onChange={(v) => set("phone", v)}
+                onChange={(value) => set("phone", value)}
                 error={errors.phone}
                 placeholder="+1 (555) 000-0000"
               />
@@ -224,14 +297,13 @@ export default function Signup() {
                 id="address"
                 type="text"
                 value={form.address}
-                onChange={(v) => set("address", v)}
+                onChange={(value) => set("address", value)}
                 error={errors.address}
                 placeholder="123 Main St, City"
               />
             </div>
 
             <div className="signup-page__row">
-              {/* Password */}
               <div className="signup-page__field">
                 <label className="signup-page__label" htmlFor="password">
                   Password
@@ -253,7 +325,8 @@ export default function Signup() {
                   <button
                     type="button"
                     className="signup-page__pw-toggle"
-                    onClick={() => setShowPw((v) => !v)}
+                    onClick={() => setShowPw((current) => !current)}
+                    aria-label={showPw ? "Hide password" : "Show password"}
                   >
                     {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -264,7 +337,6 @@ export default function Signup() {
                 )}
               </div>
 
-              {/* Confirm */}
               <div className="signup-page__field">
                 <label className="signup-page__label" htmlFor="confirm">
                   Confirm Password
@@ -286,7 +358,12 @@ export default function Signup() {
                   <button
                     type="button"
                     className="signup-page__pw-toggle"
-                    onClick={() => setShowConfirm((v) => !v)}
+                    onClick={() => setShowConfirm((current) => !current)}
+                    aria-label={
+                      showConfirm
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
                   >
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
