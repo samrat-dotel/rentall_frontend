@@ -1,0 +1,38 @@
+export const users = [
+  {
+    _id: "u1",
+    name: "Alex Morgan",
+    email: "alex@example.com",
+    profilePic: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=200",
+    address: "42 Maple Street, New York, NY 10001",
+    isAdmin: true,
+    phone: "+1 (555) 234-5678",
+  },
+  {
+    _id: "u2",
+    name: "Sofia Chen",
+    email: "sofia@example.com",
+    profilePic: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=200",
+    address: "18 Birch Lane, Los Angeles, CA 90001",
+    isAdmin: false,
+    phone: "+1 (555) 876-5432",
+  },
+  {
+    _id: "u3",
+    name: "James Park",
+    email: "james@example.com",
+    profilePic: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=200",
+    address: "5 Oak Avenue, Chicago, IL 60601",
+    isAdmin: false,
+    phone: "+1 (555) 345-6789",
+  },
+  {
+    _id: "u4",
+    name: "Maya Johnson",
+    email: "maya@example.com",
+    profilePic: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=200",
+    address: "99 Pine Road, Austin, TX 73301",
+    isAdmin: false,
+    phone: "+1 (555) 987-6543",
+  },
+];

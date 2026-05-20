@@ -1,0 +1,100 @@
+.payment-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  transition: box-shadow var(--transition-fast);
+}
+
+.payment-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.payment-card__icon {
+  width: 48px;
+  height: 48px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.payment-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.payment-card__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.payment-card__name {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+}
+
+.payment-card__email {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.payment-card__meta {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.payment-card__id {
+  font-family: monospace;
+  color: var(--color-text-muted);
+}
+
+.payment-card__amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.payment-card__amount-value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.payment-card__amount-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+@media (max-width: 480px) {
+  .payment-card {
+    flex-wrap: wrap;
+  }
+  .payment-card__amount {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    border-top: 1px solid var(--color-border-light);
+    padding-top: var(--space-3);
+  }
+}

@@ -1,0 +1,103 @@
+.payments-page {
+  padding: var(--space-10) 0 var(--space-16);
+}
+
+.payments-page__header {
+  margin-bottom: var(--space-8);
+}
+
+.payments-page__title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.4px;
+}
+
+.payments-page__sub {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-base);
+  margin-top: var(--space-1);
+}
+
+/* Summary */
+.payments-page__summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.payments-page__summary-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.payments-page__summary-card--success { border-left: 4px solid var(--color-success); }
+.payments-page__summary-card--warn    { border-left: 4px solid var(--color-warning); }
+.payments-page__summary-card--neutral { border-left: 4px solid var(--neutral-400); }
+
+.payments-page__summary-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.payments-page__summary-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* Filters */
+.payments-page__filters {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.payments-page__filter-btn {
+  padding: 7px var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.payments-page__filter-btn:hover {
+  border-color: var(--color-text-primary);
+  color: var(--color-text-primary);
+}
+
+.payments-page__filter-btn--active {
+  background: var(--color-text-primary);
+  border-color: var(--color-text-primary);
+  color: #fff;
+}
+
+/* List */
+.payments-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.payments-page__empty {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-10) 0;
+}
+
+@media (max-width: 760px) {
+  .payments-page__summary { grid-template-columns: 1fr 1fr; }
+}

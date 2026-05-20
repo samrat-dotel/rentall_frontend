@@ -1,0 +1,296 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, AlertCircle, CheckCircle, Upload } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import "./Signup.css";
+
+const BENEFITS = [
+  "Rent products at a fraction of the cost",
+  "Access hundreds of curated items",
+  "Free returns included",
+  "Flexible rental durations",
+];
+
+export default function Signup() {
+  const { signup } = useAuth();
+  const { addToast } = useToast();
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    password: "",
+    confirm: "",
+  });
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [avatarPreview, setAvatarPreview] = useState(null);
+
+  const set = (key, val) => {
+    setForm((f) => ({ ...f, [key]: val }));
+    setErrors((e) => ({ ...e, [key]: "" }));
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!form.name.trim()) e.name = "Name is required.";
+    if (!form.email.trim()) e.email = "Email is required.";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = "Enter a valid email.";
+    if (!form.password) e.password = "Password is required.";
+    else if (form.password.length < 6)
+      e.password = "Password must be at least 6 characters.";
+    if (form.confirm !== form.password) e.confirm = "Passwords do not match.";
+    return e;
+  };
+
+  const handleAvatar = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setAvatarPreview(ev.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
+    setLoading(true);
+    try {
+      await signup(form);
+      addToast("Account created! Welcome to Urbanoma.", "success");
+      navigate("/");
+    } catch (e) {
+      setErrors({ form: e.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="signup-page">
+      {/* Left: Benefits Panel */}
+      <div className="signup-page__left">
+        <div className="signup-page__left-inner">
+          <Link to="/" className="signup-page__logo">
+            RentAll<span>&#10003;</span>
+          </Link>
+          <div className="signup-page__left-hero">
+            <img
+              src="https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=700"
+              alt=""
+              className="signup-page__hero-img"
+            />
+          </div>
+          <div className="signup-page__benefits">
+            <h3 className="signup-page__benefits-title">Why join RentAll?</h3>
+            <ul className="signup-page__benefits-list">
+              {BENEFITS.map((b) => (
+                <li key={b} className="signup-page__benefit">
+                  <CheckCircle
+                    size={16}
+                    className="signup-page__benefit-icon"
+                  />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Form */}
+      <div className="signup-page__right">
+        <div className="signup-page__right-inner">
+          <div className="signup-page__form-header">
+            <h1 className="signup-page__title">Create your account</h1>
+            <p className="signup-page__sub">
+              Start renting in minutes. No credit card required.
+            </p>
+          </div>
+
+          {/* Avatar Upload */}
+          <div className="signup-page__avatar-upload">
+            <div className="signup-page__avatar-preview">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Preview" />
+              ) : (
+                <Upload size={24} className="signup-page__upload-icon" />
+              )}
+            </div>
+            <div>
+              <label htmlFor="avatar-input" className="signup-page__upload-btn">
+                {avatarPreview ? "Change photo" : "Upload profile photo"}
+              </label>
+              <input
+                id="avatar-input"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatar}
+                style={{ display: "none" }}
+              />
+              <p className="signup-page__upload-hint">
+                Optional · JPG or PNG · Max 5MB
+              </p>
+            </div>
+          </div>
+
+          {errors.form && (
+            <div className="signup-page__error-banner">
+              <AlertCircle size={15} /> {errors.form}
+            </div>
+          )}
+
+          <form
+            className="signup-page__form"
+            onSubmit={handleSubmit}
+            noValidate
+          >
+            <div className="signup-page__row">
+              <Field
+                label="Full Name"
+                id="name"
+                type="text"
+                value={form.name}
+                onChange={(v) => set("name", v)}
+                error={errors.name}
+                placeholder="Alex Morgan"
+              />
+              <Field
+                label="Email Address"
+                id="email"
+                type="email"
+                value={form.email}
+                onChange={(v) => set("email", v)}
+                error={errors.email}
+                placeholder="you@example.com"
+              />
+            </div>
+            <div className="signup-page__row">
+              <Field
+                label="Phone Number"
+                id="phone"
+                type="tel"
+                value={form.phone}
+                onChange={(v) => set("phone", v)}
+                error={errors.phone}
+                placeholder="+1 (555) 000-0000"
+              />
+              <Field
+                label="Address"
+                id="address"
+                type="text"
+                value={form.address}
+                onChange={(v) => set("address", v)}
+                error={errors.address}
+                placeholder="123 Main St, City"
+              />
+            </div>
+
+            <div className="signup-page__row">
+              {/* Password */}
+              <div className="signup-page__field">
+                <label className="signup-page__label" htmlFor="password">
+                  Password
+                </label>
+                <div className="signup-page__input-wrap">
+                  <input
+                    id="password"
+                    type={showPw ? "text" : "password"}
+                    value={form.password}
+                    onChange={(e) => set("password", e.target.value)}
+                    className={`signup-page__input${errors.password ? " signup-page__input--error" : ""}`}
+                    placeholder="Min 6 characters"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="signup-page__pw-toggle"
+                    onClick={() => setShowPw((v) => !v)}
+                  >
+                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="signup-page__field-error">{errors.password}</p>
+                )}
+              </div>
+
+              {/* Confirm */}
+              <div className="signup-page__field">
+                <label className="signup-page__label" htmlFor="confirm">
+                  Confirm Password
+                </label>
+                <div className="signup-page__input-wrap">
+                  <input
+                    id="confirm"
+                    type={showConfirm ? "text" : "password"}
+                    value={form.confirm}
+                    onChange={(e) => set("confirm", e.target.value)}
+                    className={`signup-page__input${errors.confirm ? " signup-page__input--error" : ""}`}
+                    placeholder="Repeat your password"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    className="signup-page__pw-toggle"
+                    onClick={() => setShowConfirm((v) => !v)}
+                  >
+                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {errors.confirm && (
+                  <p className="signup-page__field-error">{errors.confirm}</p>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="signup-page__submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="signup-page__spinner" />
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </form>
+
+          <p className="signup-page__login-link">
+            Already have an account? <Link to="/login">Sign in</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, id, type, value, onChange, error, placeholder }) {
+  return (
+    <div className="signup-page__field">
+      <label className="signup-page__label" htmlFor={id}>
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`signup-page__input${error ? " signup-page__input--error" : ""}`}
+        placeholder={placeholder}
+      />
+      {error && <p className="signup-page__field-error">{error}</p>}
+    </div>
+  );
+}
