@@ -61,32 +61,9 @@ export default function Navbar() {
       <div className="navbar__inner container">
         {/* Logo */}
         <Link to="/" className="navbar__logo">
-          Urbanoma
+          RentAll
           <span className="navbar__logo-dot">&#10003;</span>
         </Link>
-
-        {/* Desktop Nav Links */}
-        <nav className="navbar__links">
-          <NavLink
-            to="/categories"
-            className={({ isActive }) =>
-              isActive ? "navbar__link navbar__link--active" : "navbar__link"
-            }
-          >
-            MEN
-          </NavLink>
-          <NavLink
-            to="/categories"
-            className={({ isActive }) =>
-              isActive ? "navbar__link navbar__link--active" : "navbar__link"
-            }
-          >
-            WOMEN
-          </NavLink>
-          <NavLink to="/categories" className="navbar__link">
-            KIDS
-          </NavLink>
-        </nav>
 
         {/* Search Bar */}
         <form className="navbar__search" onSubmit={handleSearch}>
