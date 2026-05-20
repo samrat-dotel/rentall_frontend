@@ -271,3 +271,5 @@ export default function Navbar() {
     </header>
   );
 }
+
+/// Hello everyone. This is to save the static frontend of rentall.
