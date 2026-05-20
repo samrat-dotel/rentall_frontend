@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, AlertCircle, CheckCircle, Upload } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useToast } from "../../context/ToastContext";
 import "./Signup.css";
 
 const BENEFITS = [
@@ -14,7 +13,6 @@ const BENEFITS = [
 
 export default function Signup() {
   const { signup } = useAuth();
-  const { addToast } = useToast();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -25,11 +23,13 @@ export default function Signup() {
     password: "",
     confirm: "",
   });
+
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const set = (key, val) => {
     setForm((f) => ({ ...f, [key]: val }));
@@ -38,18 +38,24 @@ export default function Signup() {
 
   const validate = () => {
     const e = {};
+
     if (!form.name.trim()) e.name = "Name is required.";
+
     if (!form.email.trim()) e.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = "Enter a valid email.";
+
     if (!form.password) e.password = "Password is required.";
     else if (form.password.length < 6)
       e.password = "Password must be at least 6 characters.";
+
     if (form.confirm !== form.password) e.confirm = "Passwords do not match.";
+
     return e;
   };
 
   const handleAvatar = (e) => {
     const file = e.target.files?.[0];
+
     if (file) {
       const reader = new FileReader();
       reader.onload = (ev) => setAvatarPreview(ev.target.result);
@@ -59,21 +65,40 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const errs = validate();
+
     if (Object.keys(errs).length) {
       setErrors(errs);
       return;
     }
+
     setLoading(true);
+
     try {
       await signup(form);
-      addToast("Account created! Welcome to Urbanoma.", "success");
-      navigate("/");
+
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        password: "",
+        confirm: "",
+      });
+
+      setAvatarPreview(null);
+      setShowSuccessPopup(true);
     } catch (e) {
       setErrors({ form: e.message });
     } finally {
       setLoading(false);
     }
+  };
+
+  const goToLogin = () => {
+    setShowSuccessPopup(false);
+    navigate("/login");
   };
 
   return (
@@ -84,6 +109,7 @@ export default function Signup() {
           <Link to="/" className="signup-page__logo">
             RentAll<span>&#10003;</span>
           </Link>
+
           <div className="signup-page__left-hero">
             <img
               src="https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=700"
@@ -91,8 +117,10 @@ export default function Signup() {
               className="signup-page__hero-img"
             />
           </div>
+
           <div className="signup-page__benefits">
             <h3 className="signup-page__benefits-title">Why join RentAll?</h3>
+
             <ul className="signup-page__benefits-list">
               {BENEFITS.map((b) => (
                 <li key={b} className="signup-page__benefit">
@@ -127,10 +155,12 @@ export default function Signup() {
                 <Upload size={24} className="signup-page__upload-icon" />
               )}
             </div>
+
             <div>
               <label htmlFor="avatar-input" className="signup-page__upload-btn">
                 {avatarPreview ? "Change photo" : "Upload profile photo"}
               </label>
+
               <input
                 id="avatar-input"
                 type="file"
@@ -138,6 +168,7 @@ export default function Signup() {
                 onChange={handleAvatar}
                 style={{ display: "none" }}
               />
+
               <p className="signup-page__upload-hint">
                 Optional · JPG or PNG · Max 5MB
               </p>
@@ -165,6 +196,7 @@ export default function Signup() {
                 error={errors.name}
                 placeholder="Alex Morgan"
               />
+
               <Field
                 label="Email Address"
                 id="email"
@@ -175,6 +207,7 @@ export default function Signup() {
                 placeholder="you@example.com"
               />
             </div>
+
             <div className="signup-page__row">
               <Field
                 label="Phone Number"
@@ -185,6 +218,7 @@ export default function Signup() {
                 error={errors.phone}
                 placeholder="+1 (555) 000-0000"
               />
+
               <Field
                 label="Address"
                 id="address"
@@ -202,16 +236,20 @@ export default function Signup() {
                 <label className="signup-page__label" htmlFor="password">
                   Password
                 </label>
+
                 <div className="signup-page__input-wrap">
                   <input
                     id="password"
                     type={showPw ? "text" : "password"}
                     value={form.password}
                     onChange={(e) => set("password", e.target.value)}
-                    className={`signup-page__input${errors.password ? " signup-page__input--error" : ""}`}
+                    className={`signup-page__input${
+                      errors.password ? " signup-page__input--error" : ""
+                    }`}
                     placeholder="Min 6 characters"
                     autoComplete="new-password"
                   />
+
                   <button
                     type="button"
                     className="signup-page__pw-toggle"
@@ -220,6 +258,7 @@ export default function Signup() {
                     {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+
                 {errors.password && (
                   <p className="signup-page__field-error">{errors.password}</p>
                 )}
@@ -230,16 +269,20 @@ export default function Signup() {
                 <label className="signup-page__label" htmlFor="confirm">
                   Confirm Password
                 </label>
+
                 <div className="signup-page__input-wrap">
                   <input
                     id="confirm"
                     type={showConfirm ? "text" : "password"}
                     value={form.confirm}
                     onChange={(e) => set("confirm", e.target.value)}
-                    className={`signup-page__input${errors.confirm ? " signup-page__input--error" : ""}`}
+                    className={`signup-page__input${
+                      errors.confirm ? " signup-page__input--error" : ""
+                    }`}
                     placeholder="Repeat your password"
                     autoComplete="new-password"
                   />
+
                   <button
                     type="button"
                     className="signup-page__pw-toggle"
@@ -248,6 +291,7 @@ export default function Signup() {
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+
                 {errors.confirm && (
                   <p className="signup-page__field-error">{errors.confirm}</p>
                 )}
@@ -272,6 +316,31 @@ export default function Signup() {
           </p>
         </div>
       </div>
+
+      {showSuccessPopup && (
+        <div className="signup-success">
+          <div className="signup-success__card">
+            <div className="signup-success__icon">
+              <CheckCircle size={38} />
+            </div>
+
+            <h2>Account created successfully</h2>
+
+            <p>
+              Your RentAll account has been created. You can now log in and
+              start using the platform.
+            </p>
+
+            <button
+              type="button"
+              className="signup-success__btn"
+              onClick={goToLogin}
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -282,14 +351,18 @@ function Field({ label, id, type, value, onChange, error, placeholder }) {
       <label className="signup-page__label" htmlFor={id}>
         {label}
       </label>
+
       <input
         id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`signup-page__input${error ? " signup-page__input--error" : ""}`}
+        className={`signup-page__input${
+          error ? " signup-page__input--error" : ""
+        }`}
         placeholder={placeholder}
       />
+
       {error && <p className="signup-page__field-error">{error}</p>}
     </div>
   );

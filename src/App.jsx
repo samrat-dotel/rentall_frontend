@@ -15,6 +15,9 @@ import Payments from './pages/Payments/Payments';
 import Profile from './pages/Profile/Profile';
 import Login from './pages/Login/Login';
 import Signup from './pages/Signup/Signup';
+import AddItem from './pages/AddItem/AddItem';
+import OwnerRequests from './pages/OwnerRequests/OwnerRequests';
+
 
 export default function App() {
   return (
@@ -34,6 +37,8 @@ export default function App() {
                   <Route path="/items"       element={<Items />} />
                   <Route path="/items/:id"   element={<ItemDetails />} />
                   <Route path="/categories"  element={<Categories />} />
+                  <Route path="/add-item" element={<AddItem />} />
+                  <Route path="/owner-requests" element={<OwnerRequests />} />
 
                   {/* Protected */}
                   <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />

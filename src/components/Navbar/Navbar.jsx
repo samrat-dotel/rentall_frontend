@@ -8,6 +8,9 @@ import {
   X,
   LogOut,
   ChevronDown,
+  PackagePlus,
+  ClipboardList,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
@@ -17,16 +20,20 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { wishlist } = useWishlist();
   const navigate = useNavigate();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
+
     window.addEventListener("scroll", onScroll);
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -36,12 +43,15 @@ export default function Navbar() {
         setDropdownOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handler);
+
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
+
     if (query.trim()) {
       navigate(`/items?q=${encodeURIComponent(query.trim())}`);
       setSearchOpen(false);
@@ -53,6 +63,7 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     setDropdownOpen(false);
+    setMobileOpen(false);
     navigate("/");
   };
 
@@ -68,6 +79,7 @@ export default function Navbar() {
         {/* Search Bar */}
         <form className="navbar__search" onSubmit={handleSearch}>
           <Search size={16} className="navbar__search-icon" />
+
           <input
             type="text"
             placeholder="Search for products, brands and more"
@@ -84,6 +96,7 @@ export default function Navbar() {
             className="navbar__icon-btn navbar__mobile-search"
             onClick={() => setSearchOpen((v) => !v)}
             aria-label="Search"
+            type="button"
           >
             <Search size={20} />
           </button>
@@ -95,6 +108,7 @@ export default function Navbar() {
             aria-label="Wishlist"
           >
             <Heart size={20} />
+
             {wishlist.length > 0 && (
               <span className="navbar__badge">{wishlist.length}</span>
             )}
@@ -106,6 +120,7 @@ export default function Navbar() {
               <button
                 className="navbar__user-btn"
                 onClick={() => setDropdownOpen((v) => !v)}
+                type="button"
               >
                 {user.profilePic ? (
                   <img
@@ -115,17 +130,20 @@ export default function Navbar() {
                   />
                 ) : (
                   <div className="navbar__avatar navbar__avatar--placeholder">
-                    {user.name[0]}
+                    {user.name?.[0] || "U"}
                   </div>
                 )}
+
                 <ChevronDown size={14} />
               </button>
+
               {dropdownOpen && (
                 <div className="navbar__dropdown">
                   <div className="navbar__dropdown-header">
                     <p className="navbar__dropdown-name">{user.name}</p>
                     <p className="navbar__dropdown-email">{user.email}</p>
                   </div>
+
                   <Link
                     to="/profile"
                     className="navbar__dropdown-item"
@@ -133,23 +151,35 @@ export default function Navbar() {
                   >
                     <User size={15} /> Profile
                   </Link>
+
+                  <Link
+                    to="/add-item"
+                    className="navbar__dropdown-item"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <PackagePlus size={15} /> List an Item
+                  </Link>
+
+                  <Link
+                    to="/owner-requests"
+                    className="navbar__dropdown-item"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    <ClipboardList size={15} /> Rental Requests
+                  </Link>
+
                   <Link
                     to="/transactions"
                     className="navbar__dropdown-item"
                     onClick={() => setDropdownOpen(false)}
                   >
-                    Transactions
+                    <ShoppingBag size={15} /> My Rentals
                   </Link>
-                  <Link
-                    to="/payments"
-                    className="navbar__dropdown-item"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Payments
-                  </Link>
+
                   <button
                     className="navbar__dropdown-item navbar__dropdown-logout"
                     onClick={handleLogout}
+                    type="button"
                   >
                     <LogOut size={15} /> Sign out
                   </button>
@@ -161,6 +191,7 @@ export default function Navbar() {
               <Link to="/login" className="navbar__btn navbar__btn--outline">
                 Login
               </Link>
+
               <Link to="/signup" className="navbar__btn navbar__btn--filled">
                 Sign Up
               </Link>
@@ -172,6 +203,7 @@ export default function Navbar() {
             className="navbar__icon-btn navbar__hamburger"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Menu"
+            type="button"
           >
             {mobileOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -183,6 +215,7 @@ export default function Navbar() {
         <div className="navbar__mobile-searchbar">
           <form onSubmit={handleSearch}>
             <Search size={16} />
+
             <input
               type="text"
               placeholder="Search..."
@@ -204,6 +237,7 @@ export default function Navbar() {
           >
             Home
           </NavLink>
+
           <NavLink
             to="/items"
             className="navbar__mobile-link"
@@ -211,6 +245,7 @@ export default function Navbar() {
           >
             Items
           </NavLink>
+
           <NavLink
             to="/categories"
             className="navbar__mobile-link"
@@ -218,6 +253,7 @@ export default function Navbar() {
           >
             Categories
           </NavLink>
+
           {user ? (
             <>
               <NavLink
@@ -227,23 +263,35 @@ export default function Navbar() {
               >
                 Profile
               </NavLink>
+
+              <NavLink
+                to="/add-item"
+                className="navbar__mobile-link"
+                onClick={() => setMobileOpen(false)}
+              >
+                List an Item
+              </NavLink>
+
+              <NavLink
+                to="/owner-requests"
+                className="navbar__mobile-link"
+                onClick={() => setMobileOpen(false)}
+              >
+                Rental Requests
+              </NavLink>
+
               <NavLink
                 to="/transactions"
                 className="navbar__mobile-link"
                 onClick={() => setMobileOpen(false)}
               >
-                Transactions
+                My Rentals
               </NavLink>
-              <NavLink
-                to="/payments"
-                className="navbar__mobile-link"
-                onClick={() => setMobileOpen(false)}
-              >
-                Payments
-              </NavLink>
+
               <button
                 className="navbar__mobile-link navbar__mobile-logout"
                 onClick={handleLogout}
+                type="button"
               >
                 Sign Out
               </button>
@@ -257,6 +305,7 @@ export default function Navbar() {
               >
                 Login
               </NavLink>
+
               <NavLink
                 to="/signup"
                 className="navbar__mobile-link"

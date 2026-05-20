@@ -97,12 +97,10 @@ export default function Footer() {
 
         <div className="footer__bottom">
           <p className="footer__copy">
-            &copy; {new Date().getFullYear()} Urbanoma. All rights reserved.
+            &copy; {new Date().getFullYear()} RentAll. All rights reserved.
           </p>
           <p className="footer__made">
-            Made with <Heart size={13} className="footer__heart" /> for fashion
-            lovers
-          </p>
+            Made with <Heart size={13} className="footer__heart" />to make renting simple, trusted, and effortless</p>
         </div>
       </div>
     </footer>

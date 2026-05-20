@@ -237,3 +237,233 @@
 @media (max-width: 480px) {
   .profile-page__items-grid { grid-template-columns: 1fr; }
 }
+
+.profile-page__avatar-wrap {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.profile-page__avatar-upload {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--color-text-primary);
+  color: white;
+  border: 2px solid var(--color-surface);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-page__avatar-input {
+  display: none;
+}
+
+.profile-page__edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-page__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+}
+
+.profile-page__stat {
+  padding: 12px 8px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.profile-page__stat-value {
+  display: block;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.profile-page__stat-label {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.profile-page__logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.profile-page__panel {
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-page__panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.profile-page__panel-header h2 {
+  margin: 0 0 6px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.profile-page__panel-header p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.profile-page__panel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  background: var(--color-text-primary);
+  color: white;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.profile-page__empty-card {
+  display: grid;
+  place-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-border);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.profile-page__request-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.profile-page__rental-row {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+}
+
+.profile-page__rental-image {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.profile-page__rental-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-page__rental-main {
+  min-width: 0;
+}
+
+.profile-page__rental-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.profile-page__rental-top h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+
+.profile-page__rental-status {
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.profile-page__rental-status--pending {
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.profile-page__rental-status--confirmed {
+  color: var(--color-success);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.profile-page__rental-status--rejected,
+.profile-page__rental-status--cancelled {
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.profile-page__rental-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+@media (max-width: 700px) {
+  .profile-page__panel-header {
+    flex-direction: column;
+  }
+
+  .profile-page__panel-btn {
+    width: 100%;
+  }
+
+  .profile-page__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-page__rental-row {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-page__rental-image {
+    width: 100%;
+    height: 170px;
+  }
+}

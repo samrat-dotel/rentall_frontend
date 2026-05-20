@@ -4,10 +4,10 @@ import './HeroSection.css';
 const slides = [
   {
     id: 1,
-    tag: 'Winter Sale',
+    tag: 'Winter Collections',
     headline: 'Dress for the Moment.',
     sub: 'Rent premium fashion — delivered today, returned on your schedule.',
-    cta: 'Shop Now',
+    cta: 'Rent Now',
     link: '/items',
     image: 'https://images.pexels.com/photos/1148957/pexels-photo-1148957.jpeg?auto=compress&cs=tinysrgb&w=1200',
     bg: '#e8ddd8',
@@ -17,7 +17,7 @@ const slides = [
     tag: 'New Arrivals',
     headline: 'Wear the Season.',
     sub: 'Explore hundreds of curated outfits for every occasion.',
-    cta: 'Browse Items',
+    cta: 'Rent Again',
     link: '/items',
     image: 'https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg?auto=compress&cs=tinysrgb&w=1200',
     bg: '#dce4ec',

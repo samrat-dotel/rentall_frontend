@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { users } from '../data/users';
 
 const AuthContext = createContext(null);
+
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -9,6 +10,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('urbanoma_user');
+
     if (stored) {
       try {
         setUser(JSON.parse(stored));
@@ -16,39 +18,64 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('urbanoma_user');
       }
     }
+
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
-    await new Promise((r) => setTimeout(r, 800));
-    const found = users.find((u) => u.email === email);
-    if (!found || password.length < 4) {
-      throw new Error('Invalid email or password.');
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.detail || 'Invalid email or password.');
     }
-    const sessionUser = { ...found, token: 'fake-jwt-token' };
-    setUser(sessionUser);
-    localStorage.setItem('urbanoma_user', JSON.stringify(sessionUser));
-    return sessionUser;
+
+    setUser(data);
+    localStorage.setItem('urbanoma_user', JSON.stringify(data));
+
+    return data;
   };
 
-  const signup = async (data) => {
-    await new Promise((r) => setTimeout(r, 800));
-    if (!data.email || !data.password || data.password.length < 6) {
-      throw new Error('Please fill all required fields. Password must be at least 6 characters.');
+  const signup = async (formData) => {
+    const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || '',
+        address: formData.address || '',
+        password: formData.password,
+        confirm: formData.confirm,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.detail ||
+          'Please fill all required fields. Password must be at least 6 characters.'
+      );
     }
-    const newUser = {
-      _id: `u${Date.now()}`,
-      name: data.name,
-      email: data.email,
-      phone: data.phone || '',
-      address: data.address || '',
-      profilePic: '',
-      isAdmin: false,
-      token: 'fake-jwt-token',
-    };
-    setUser(newUser);
-    localStorage.setItem('urbanoma_user', JSON.stringify(newUser));
-    return newUser;
+
+    // Important:
+    // Do NOT set user here.
+    // Do NOT save user to localStorage here.
+    // Signup only creates the account.
+    return data;
   };
 
   const logout = () => {
