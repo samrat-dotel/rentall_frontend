@@ -22,6 +22,11 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
+  const saveUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem('urbanoma_user', JSON.stringify(userData));
+  };
+
   const login = async (email, password) => {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
@@ -40,8 +45,7 @@ export function AuthProvider({ children }) {
       throw new Error(data.detail || 'Invalid email or password.');
     }
 
-    setUser(data);
-    localStorage.setItem('urbanoma_user', JSON.stringify(data));
+    saveUser(data);
 
     return data;
   };
@@ -78,13 +82,70 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const uploadProfileImage = async (file) => {
+    if (!user?.token) {
+      throw new Error('Please login first.');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE_URL}/auth/profile-image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.detail || 'Could not upload profile image.');
+    }
+
+    const updatedUser = {
+      ...user,
+      ...data,
+      token: user.token,
+    };
+
+    saveUser(updatedUser);
+
+    return updatedUser;
+  };
+
+  const updateUser = (newData) => {
+    if (!user) return null;
+
+    const updatedUser = {
+      ...user,
+      ...newData,
+      token: user.token,
+    };
+
+    saveUser(updatedUser);
+
+    return updatedUser;
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('urbanoma_user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        signup,
+        logout,
+        uploadProfileImage,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

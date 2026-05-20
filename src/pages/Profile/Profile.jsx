@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  User,
   Edit3,
   Check,
   X,
@@ -33,7 +32,7 @@ const STATUS_LABELS = {
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout, updateUser, uploadProfileImage } = useAuth();
   const { addToast } = useToast();
 
   const [editing, setEditing] = useState(false);
@@ -55,6 +54,7 @@ export default function Profile() {
   const [loadingItems, setLoadingItems] = useState(true);
   const [loadingRentals, setLoadingRentals] = useState(true);
   const [loadingRequests, setLoadingRequests] = useState(true);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -161,17 +161,7 @@ export default function Profile() {
     ];
   }, [myItems, myRentals, ownerRequests]);
 
-  const saveUserLocally = (updatedUser) => {
-    localStorage.setItem('urbanoma_user', JSON.stringify(updatedUser));
-
-    setProfileUser(updatedUser);
-
-    if (typeof updateUser === 'function') {
-      updateUser(updatedUser);
-    }
-  };
-
-  const handleProfileImageChange = (e) => {
+  const handleProfileImageChange = async (e) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
@@ -181,7 +171,7 @@ export default function Profile() {
       return;
     }
 
-    const maxSizeInMb = 1;
+    const maxSizeInMb = 2;
     const maxSizeInBytes = maxSizeInMb * 1024 * 1024;
 
     if (file.size > maxSizeInBytes) {
@@ -189,24 +179,30 @@ export default function Profile() {
       return;
     }
 
-    const reader = new FileReader();
+    if (typeof uploadProfileImage !== 'function') {
+      addToast('Profile image upload is not connected in AuthContext.', 'error');
+      return;
+    }
 
-    reader.onloadend = () => {
+    setUploadingImage(true);
+
+    try {
+      const updatedUser = await uploadProfileImage(file);
+
+      setProfileUser(updatedUser);
+
       setForm((current) => ({
         ...current,
-        profilePic: reader.result,
+        profilePic: updatedUser.profilePic || '',
       }));
 
-      const updatedUser = {
-        ...profileUser,
-        profilePic: reader.result,
-      };
-
-      saveUserLocally(updatedUser);
-      addToast('Profile image updated.', 'success');
-    };
-
-    reader.readAsDataURL(file);
+      addToast('Profile image saved successfully.', 'success');
+    } catch (error) {
+      addToast(error.message || 'Could not save profile image.', 'error');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
   };
 
   const handleSave = () => {
@@ -217,15 +213,25 @@ export default function Profile() {
       return;
     }
 
-    const updatedUser = {
-      ...profileUser,
+    const updatedData = {
       name: form.name.trim(),
       phone: form.phone.trim(),
       address: form.address.trim(),
       profilePic: form.profilePic,
     };
 
-    saveUserLocally(updatedUser);
+    let updatedUser = {
+      ...profileUser,
+      ...updatedData,
+    };
+
+    if (typeof updateUser === 'function') {
+      updatedUser = updateUser(updatedData) || updatedUser;
+    } else {
+      localStorage.setItem('urbanoma_user', JSON.stringify(updatedUser));
+    }
+
+    setProfileUser(updatedUser);
     setEditing(false);
     addToast('Profile updated successfully!', 'success');
   };
@@ -272,7 +278,9 @@ export default function Profile() {
 
                 <label
                   htmlFor="profileImage"
-                  className="profile-page__avatar-upload"
+                  className={`profile-page__avatar-upload${
+                    uploadingImage ? ' profile-page__avatar-upload--loading' : ''
+                  }`}
                   title="Change profile image"
                 >
                   <Camera size={15} />
@@ -284,8 +292,13 @@ export default function Profile() {
                   accept="image/*"
                   className="profile-page__avatar-input"
                   onChange={handleProfileImageChange}
+                  disabled={uploadingImage}
                 />
               </div>
+
+              {uploadingImage && (
+                <p className="profile-page__uploading-text">Saving image...</p>
+              )}
 
               {profileUser?.isAdmin && (
                 <span className="profile-page__admin-badge">Admin</span>
@@ -577,7 +590,11 @@ function RentalRow({ booking, mode }) {
             {booking.days} day{booking.days !== 1 ? 's' : ''}
           </span>
           <span>Total: ${Number(booking.totalPrice || 0).toFixed(2)}</span>
-          <span>{mode === 'owner' ? `Renter: ${booking.userId}` : `Owner: ${booking.ownerId || 'N/A'}`}</span>
+          <span>
+            {mode === 'owner'
+              ? `Renter: ${booking.userId}`
+              : `Owner: ${booking.ownerId || 'N/A'}`}
+          </span>
         </div>
       </div>
     </div>
