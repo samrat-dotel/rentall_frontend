@@ -30,7 +30,7 @@ export default function ItemCard({ item }) {
         >
           <Heart size={16} fill={wishlisted ? 'currentColor' : 'none'} />
         </button>
-        {item.stock === 0 && <div className="item-card__sold-out">Sold Out</div>}
+        {item.stock === 0 && <div className="item-card__sold-out">Rented</div>}
       </div>
       <div className="item-card__body">
         <p className="item-card__name">{item.name}</p>

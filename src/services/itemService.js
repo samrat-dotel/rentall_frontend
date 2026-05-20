@@ -7,6 +7,9 @@ function normalizeLocalItem(item) {
   return {
     ...item,
     source: "local",
+    ownerName: "",
+    ownerEmail: "",
+    ownerProfilePic: "",
   };
 }
 
@@ -24,6 +27,11 @@ function normalizeBackendItem(item) {
     image: item.image || "",
     images: Array.isArray(item.images) ? item.images : [],
     source: "backend",
+
+    // Real owner details from backend
+    ownerName: item.ownerName || "",
+    ownerEmail: item.ownerEmail || "",
+    ownerProfilePic: item.ownerProfilePic || "",
   };
 }
 
@@ -41,7 +49,11 @@ function dedupeById(list) {
 
 export async function getBackendItems() {
   try {
-    const res = await fetch(`${API_BASE_URL}/items`);
+    const res = await fetch(`${API_BASE_URL}/items?t=${Date.now()}`, {
+      cache: "no-store",
+    });
+
+    console.log("BACKEND FETCH STATUS:", res.status);
 
     if (!res.ok) {
       console.error("Failed to fetch backend items:", res.status);
@@ -49,6 +61,8 @@ export async function getBackendItems() {
     }
 
     const data = await res.json();
+
+    console.log("BACKEND ITEMS FROM SERVICE:", data);
 
     return data.map(normalizeBackendItem);
   } catch (error) {
@@ -59,14 +73,16 @@ export async function getBackendItems() {
 
 export async function getHybridItems() {
   const backendItems = await getBackendItems();
-
   const local = localItems.map(normalizeLocalItem);
 
-  /**
-   * Backend first.
-   * This makes newly listed owner items appear first on Home and Items page.
-   */
-  return dedupeById([...backendItems, ...local]);
+  const sortedBackendItems = [...backendItems].sort((a, b) => {
+    const aId = Number(String(a._id || "").replace("bi", ""));
+    const bId = Number(String(b._id || "").replace("bi", ""));
+
+    return bId - aId;
+  });
+
+  return dedupeById([...sortedBackendItems, ...local]);
 }
 
 export async function getHybridFeaturedItems() {
@@ -83,7 +99,9 @@ export async function getHybridItemById(itemId) {
 
 export async function getBackendCategories() {
   try {
-    const res = await fetch(`${API_BASE_URL}/categories`);
+    const res = await fetch(`${API_BASE_URL}/categories?t=${Date.now()}`, {
+      cache: "no-store",
+    });
 
     if (!res.ok) {
       console.error("Failed to fetch backend categories:", res.status);
@@ -142,10 +160,10 @@ export async function createBackendItem(itemData, token) {
 
 export async function uploadItemImage(file, token) {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
   const res = await fetch(`${API_BASE_URL}/items/upload-image`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
@@ -155,7 +173,7 @@ export async function uploadItemImage(file, token) {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.detail || 'Could not upload image.');
+    throw new Error(data.detail || "Could not upload image.");
   }
 
   return data.imageUrl;

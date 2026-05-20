@@ -1,19 +1,56 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { ShoppingBag, ChevronLeft, Package, Calendar } from 'lucide-react';
+
 import WishlistButton from '../../components/WishlistButton/WishlistButton';
 import ItemCard from '../../components/ItemCard/ItemCard';
 import { Loader } from '../../components/Loader/Loader';
+
 import { useToast } from '../../context/ToastContext';
 import { useRecentlyViewed } from '../../context/RecentlyViewedContext';
 import { useAuth } from '../../context/AuthContext';
+
 import {
   getHybridItems,
   getHybridCategories,
 } from '../../services/itemService';
+
 import { createBooking } from '../../services/bookingService';
 import { users } from '../../data/users';
+
 import './ItemDetails.css';
+
+function getDisplayOwner(foundItem) {
+  if (!foundItem) {
+    return null;
+  }
+
+  /*
+    Backend items return real owner details:
+    ownerName, ownerEmail, ownerProfilePic.
+
+    Important:
+    Do not match backend userId with local users.js.
+    Local users.js can contain fake demo users like Sofia.
+  */
+  if (foundItem.source === 'backend') {
+    return {
+      name: foundItem.ownerName || 'Verified RentAll Owner',
+      email: foundItem.ownerEmail || foundItem.userId || 'Backend listed item',
+      profilePic: foundItem.ownerProfilePic || '',
+    };
+  }
+
+  const localOwner = users.find((u) => u._id === foundItem.userId);
+
+  return (
+    localOwner || {
+      name: 'RentAll Owner',
+      email: 'owner@rentall.com',
+      profilePic: '',
+    }
+  );
+}
 
 export default function ItemDetails() {
   const { id } = useParams();
@@ -53,11 +90,7 @@ export default function ItemDetails() {
           return;
         }
 
-        const foundOwner = users.find((u) => u._id === foundItem.userId) || {
-          name: 'RentAll Owner',
-          email: 'owner@rentall.com',
-          profilePic: '',
-        };
+        const foundOwner = getDisplayOwner(foundItem);
 
         const foundCategory = hybridCategories.find(
           (c) => c._id === foundItem.category
@@ -79,6 +112,7 @@ export default function ItemDetails() {
         addViewed(foundItem._id);
       } catch (error) {
         console.error('Failed to load item details:', error);
+
         setItem(null);
         setOwner(null);
         setCategory(null);
@@ -111,7 +145,13 @@ export default function ItemDetails() {
     );
   }
 
-  const totalCost = (Number(item.price) * days).toFixed(2);
+  const availableUnits = Number(item.stock || 0);
+  const isAvailableForRent = availableUnits > 0;
+  const totalCost = (Number(item.price || 0) * days).toFixed(2);
+
+  const availabilityLabel = isAvailableForRent
+    ? `${availableUnits} available for rent`
+    : 'Currently rented';
 
   const imgList =
     item.images && item.images.length > 0
@@ -121,14 +161,27 @@ export default function ItemDetails() {
         : [];
 
   const handleRent = async () => {
-    if (Number(item.stock) === 0) {
-      addToast('This item is out of stock.', 'error');
+    if (!isAvailableForRent) {
+      addToast(
+        'This item is currently rented and not available right now.',
+        'error'
+      );
       return;
     }
 
     if (!user) {
       addToast('Please login before renting an item.', 'error');
       navigate('/login');
+      return;
+    }
+
+    if (user._id === item.userId) {
+      addToast('You cannot rent your own listed item.', 'error');
+      return;
+    }
+
+    if (!item.userId) {
+      addToast('This item does not have an owner.', 'error');
       return;
     }
 
@@ -183,7 +236,7 @@ export default function ItemDetails() {
             <div className="item-details__thumbs">
               {imgList.map((img, i) => (
                 <button
-                  key={img}
+                  key={`${img}-${i}`}
                   className={`item-details__thumb${
                     i === activeImg ? ' item-details__thumb--active' : ''
                   }`}
@@ -207,18 +260,16 @@ export default function ItemDetails() {
 
           <div className="item-details__price-row">
             <span className="item-details__price">
-              ${item.price}
+              ${Number(item.price || 0).toFixed(2)}
               <span className="item-details__price-unit"> / day</span>
             </span>
 
             <span
               className={`badge badge--${
-                Number(item.stock) > 0 ? 'success' : 'error'
+                isAvailableForRent ? 'success' : 'error'
               }`}
             >
-              {Number(item.stock) > 0
-                ? `${item.stock} in stock`
-                : 'Out of stock'}
+              {availabilityLabel}
             </span>
           </div>
 
@@ -228,7 +279,10 @@ export default function ItemDetails() {
             <div className="item-details__meta-item">
               <Package size={15} />
               <span>
-                Available from <strong>{item.availableDate || 'Now'}</strong>
+                Rental availability:{' '}
+                <strong>
+                  {isAvailableForRent ? 'Available now' : 'Currently rented'}
+                </strong>
               </span>
             </div>
 
@@ -251,7 +305,7 @@ export default function ItemDetails() {
                 onClick={() => setDays((d) => Math.max(1, d - 1))}
                 className="item-details__duration-btn"
                 type="button"
-                disabled={renting}
+                disabled={renting || !isAvailableForRent}
               >
                 −
               </button>
@@ -262,7 +316,7 @@ export default function ItemDetails() {
                 onClick={() => setDays((d) => d + 1)}
                 className="item-details__duration-btn"
                 type="button"
-                disabled={renting}
+                disabled={renting || !isAvailableForRent}
               >
                 +
               </button>
@@ -278,10 +332,15 @@ export default function ItemDetails() {
             <button
               className="item-details__rent-btn"
               onClick={handleRent}
-              disabled={Number(item.stock) === 0 || renting}
+              disabled={!isAvailableForRent || renting}
               type="button"
             >
-              <ShoppingBag size={18} /> {renting ? 'Booking...' : 'Rent Now'}
+              <ShoppingBag size={18} />
+              {renting
+                ? 'Requesting...'
+                : isAvailableForRent
+                  ? 'Rent Now'
+                  : 'Currently Rented'}
             </button>
 
             <WishlistButton itemId={item._id} size="lg" />
